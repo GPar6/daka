@@ -1,0 +1,582 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>☀️ 暑假刷卷打卡大作战</title>
+    <style>
+        :root {
+            --primary-color: #4A90E2;
+            --accent-color: #FF6B6B;
+            --success-color: #2ECC71;
+            --warning-color: #F1C40F;
+            --bg-color: #F0F4F8;
+            --card-bg: #FFFFFF;
+            --text-color: #333333;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 20px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 800px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* 顶部看板 */
+        header {
+            background: linear-gradient(135deg, #6C5CE7, #a29bfe);
+            color: white;
+            padding: 24px;
+            border-radius: 18px;
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 1.8rem;
+            margin-bottom: 8px;
+        }
+
+        header p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+            margin-bottom: 20px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 12px;
+        }
+
+        .stat-card {
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(5px);
+            padding: 12px;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .stat-num {
+            font-size: 1.5rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+        }
+
+        /* 进度条 */
+        .progress-box {
+            margin-top: 15px;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+            height: 12px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .progress-fill {
+            background-color: #00FFAB;
+            height: 100%;
+            width: 0%;
+            transition: width 0.4s ease;
+        }
+
+        /* 通用卡片样式 */
+        .card {
+            background: var(--card-bg);
+            padding: 20px;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            font-size: 1.2rem;
+            margin-bottom: 16px;
+            color: #2d3436;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* 打卡表单 */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .form-group label {
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: #636e72;
+        }
+
+        input, select, button {
+            padding: 10px 14px;
+            border-radius: 8px;
+            border: 1px solid #dfe6e9;
+            font-size: 0.95rem;
+            outline: none;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--primary-color);
+        }
+
+        .btn-submit {
+            background-color: var(--primary-color);
+            color: white;
+            border: none;
+            font-weight: bold;
+            cursor: pointer;
+            transition: background 0.2s;
+            width: 100%;
+            padding: 12px;
+            margin-top: 8px;
+        }
+
+        .btn-submit:hover {
+            background-color: #357ABD;
+        }
+
+        /* 打卡地图日历 */
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(65px, 1fr));
+            gap: 8px;
+            max-height: 280px;
+            overflow-y: auto;
+            padding-right: 4px;
+        }
+
+        .day-box {
+            aspect-ratio: 1;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.8rem;
+            background-color: #fafafa;
+            cursor: pointer;
+            transition: all 0.2s;
+            position: relative;
+        }
+
+        .day-box.has-data {
+            background-color: #E8F8F5;
+            border-color: #2ECC71;
+            color: #27AE60;
+            font-weight: bold;
+        }
+
+        .day-box.today {
+            border: 2px solid var(--accent-color);
+        }
+
+        .day-box .star {
+            font-size: 0.7rem;
+            margin-top: 2px;
+        }
+
+        /* 打卡记录列表 */
+        .record-list {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .record-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px;
+            background-color: #f8f9fa;
+            border-left: 4px solid var(--primary-color);
+            border-radius: 6px;
+        }
+
+        .record-info {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .record-title {
+            font-weight: bold;
+            font-size: 0.95rem;
+        }
+
+        .record-meta {
+            font-size: 0.8rem;
+            color: #7f8c8d;
+        }
+
+        .tag-subject {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 0.75rem;
+            color: white;
+            margin-right: 6px;
+        }
+
+        .bg-math { background-color: #3498db; }
+        .bg-chinese { background-color: #e74c3c; }
+        .bg-english { background-color: #f39c12; }
+        .bg-other { background-color: #9b59b6; }
+
+        .btn-delete {
+            background: none;
+            border: none;
+            color: #e74c3c;
+            cursor: pointer;
+            font-size: 0.9rem;
+            padding: 4px 8px;
+        }
+
+        .empty-tip {
+            text-align: center;
+            color: #b2bec3;
+            padding: 20px;
+            font-size: 0.9rem;
+        }
+
+        .footer-tools {
+            text-align: right;
+        }
+
+        .btn-reset {
+            background: transparent;
+            border: none;
+            color: #b2bec3;
+            font-size: 0.75rem;
+            cursor: pointer;
+            text-decoration: underline;
+        }
+
+        /* 简单动画 */
+        @keyframes pop {
+            0% { transform: scale(0.95); }
+            50% { transform: scale(1.03); }
+            100% { transform: scale(1); }
+        }
+
+        .pop-anim {
+            animation: pop 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- 头部数据看板 -->
+    <header>
+        <h1>☀️ 暑假刷卷打卡大作战 📝</h1>
+        <p>每一份努力，都是通往新学期学霸的阶梯！</p>
+        <div class="stats-grid">
+            <div class="stat-card">
+                <span class="stat-num" id="statCompletedDays">0</span>
+                <span class="stat-label">打卡天数</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num" id="statTotalPapers">0</span>
+                <span class="stat-label">累计完成(套)</span>
+            </div>
+            <div class="stat-card">
+                <span class="stat-num" id="statStreak">0</span>
+                <span class="stat-label">连续打卡(天)</span>
+            </div>
+        </div>
+        <div class="progress-box">
+            <div class="progress-fill" id="progressFill"></div>
+        </div>
+    </header>
+
+    <!-- 打卡输入卡片 -->
+    <section class="card pop-anim">
+        <h2>✏️ 今日打卡登记</h2>
+        <form id="checkinForm">
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>打卡日期</label>
+                    <input type="date" id="inputDate" required>
+                </div>
+                <div class="form-group">
+                    <label>科目选择</label>
+                    <select id="inputSubject">
+                        <option value="数学">🔢 数学</option>
+                        <option value="语文">📖 语文</option>
+                        <option value="英语">🔤 英语</option>
+                        <option value="综合">🔬 综合/其他</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>试卷名称/页码</label>
+                    <input type="text" id="inputName" placeholder="例如：第三单元冲刺卷" required>
+                </div>
+                <div class="form-group">
+                    <label>得分 / 备注 (选填)</label>
+                    <input type="text" id="inputScore" placeholder="如：98分 / 用时40分钟">
+                </div>
+            </div>
+            <button type="submit" class="btn-submit">🌟 完成并提交打卡</button>
+        </form>
+    </section>
+
+    <!-- 7-8月暑假地图 -->
+    <section class="card">
+        <h2>🗓️ 暑假打卡地图 (7月 - 8月)</h2>
+        <div class="calendar-grid" id="calendarGrid"></div>
+    </section>
+
+    <!-- 打卡历史清单 -->
+    <section class="card">
+        <h2>📋 打卡记录明细</h2>
+        <div class="record-list" id="recordList"></div>
+        <div class="footer-tools" style="margin-top: 15px;">
+            <button class="btn-reset" onclick="clearAllData()">🗑️ 清空所有数据</button>
+        </div>
+    </section>
+</div>
+
+<script>
+    // 基础数据存储结构
+    const STORAGE_KEY = 'summer_homework_records_v1';
+    let records = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+
+    // 初始化页面
+    document.addEventListener('DOMContentLoaded', () => {
+        // 设置默认日期为今天
+        const todayStr = new Date().toISOString().split('T')[0];
+        document.getElementById('inputDate').value = todayStr;
+
+        renderCalendar();
+        renderRecords();
+        updateStats();
+
+        // 监听表单提交
+        document.getElementById('checkinForm').addEventListener('submit', handleCheckin);
+    });
+
+    // 提交打卡
+    function handleCheckin(e) {
+        e.preventDefault();
+
+        const date = document.getElementById('inputDate').value;
+        const subject = document.getElementById('inputSubject').value;
+        const name = document.getElementById('inputName').value.trim();
+        const score = document.getElementById('inputScore').value.trim();
+
+        if (!name) return;
+
+        const newRecord = {
+            id: Date.now(),
+            date: date,
+            subject: subject,
+            name: name,
+            score: score || '已完成'
+        };
+
+        records.unshift(newRecord);
+        saveRecords();
+
+        // 清空试卷名与分数，保持日期和科目方便连续录入
+        document.getElementById('inputName').value = '';
+        document.getElementById('inputScore').value = '';
+
+        renderCalendar();
+        renderRecords();
+        updateStats();
+
+        alert('🎉 打卡成功！棒棒哒，继续保持！');
+    }
+
+    // 删除记录
+    function deleteRecord(id) {
+        if (confirm('确定要删除这条打卡记录吗？')) {
+            records = records.filter(item => item.id !== id);
+            saveRecords();
+            renderCalendar();
+            renderRecords();
+            updateStats();
+        }
+    }
+
+    // 保存到本地存储
+    function saveRecords() {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(records));
+    }
+
+    // 渲染打卡地图（固定生成7月1日至8月31日）
+    function renderCalendar() {
+        const grid = document.getElementById('calendarGrid');
+        grid.innerHTML = '';
+
+        const year = new Date().getFullYear();
+        const startDate = new Date(year, 6, 1); // 7月1日
+        const endDate = new Date(year, 7, 31);   // 8月31日
+
+        // 提取已打卡的日期集合
+        const checkedDates = new Set(records.map(r => r.date));
+        const todayStr = new Date().toISOString().split('T')[0];
+
+        let curr = new Date(startDate);
+        while (curr <= endDate) {
+            const dateStr = curr.toISOString().split('T')[0];
+            const monthDay = `${curr.getMonth() + 1}.${curr.getDate()}`;
+
+            const dayBox = document.createElement('div');
+            dayBox.className = 'day-box';
+            
+            if (checkedDates.has(dateStr)) {
+                dayBox.classList.add('has-data');
+            }
+            if (dateStr === todayStr) {
+                dayBox.classList.add('today');
+            }
+
+            dayBox.innerHTML = `
+                <span>${monthDay}</span>
+                ${checkedDates.has(dateStr) ? '<span class="star">⭐</span>' : ''}
+            `;
+
+            // 点击日历卡片快速将日期设置到表单
+            dayBox.onclick = () => {
+                document.getElementById('inputDate').value = dateStr;
+            };
+
+            grid.appendChild(dayBox);
+            curr.setDate(curr.getDate() + 1);
+        }
+    }
+
+    // 渲染明细列表
+    function renderRecords() {
+        const list = document.getElementById('recordList');
+        list.innerHTML = '';
+
+        if (records.length === 0) {
+            list.innerHTML = '<div class="empty-tip">还没有打卡记录哦，赶紧做一张卷子打卡吧！💪</div>';
+            return;
+        }
+
+        // 按日期降序排列
+        const sortedRecords = [...records].sort((a, b) => new Date(b.date) - new Date(a.date));
+
+        sortedRecords.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'record-item';
+
+            let tagClass = 'bg-other';
+            if (item.subject === '数学') tagClass = 'bg-math';
+            if (item.subject === '语文') tagClass = 'bg-chinese';
+            if (item.subject === '英语') tagClass = 'bg-english';
+
+            el.innerHTML = `
+                <div class="record-info">
+                    <div class="record-title">
+                        <span class="tag-subject ${tagClass}">${item.subject}</span>
+                        ${escapeHtml(item.name)}
+                    </div>
+                    <div class="record-meta">
+                        📅 ${item.date} | 📝 ${escapeHtml(item.score)}
+                    </div>
+                </div>
+                <button class="btn-delete" onclick="deleteRecord(${item.id})">🗑️ 删除</button>
+            `;
+            list.appendChild(el);
+        });
+    }
+
+    // 更新数据统计
+    function updateStats() {
+        // 总套数
+        const totalPapers = records.length;
+        
+        // 独一无二的打卡天数
+        const uniqueDays = new Set(records.map(r => r.date));
+        const completedDaysCount = uniqueDays.size;
+
+        // 计算连续打卡天数
+        let streak = 0;
+        const today = new Date();
+        today.setHours(0,0,0,0);
+        
+        let checkDate = new Date(today);
+        
+        // 如果今天没打卡，先查昨天
+        let todayStr = checkDate.toISOString().split('T')[0];
+        if (!uniqueDays.has(todayStr)) {
+            checkDate.setDate(checkDate.getDate() - 1);
+        }
+
+        while (true) {
+            let dStr = checkDate.toISOString().split('T')[0];
+            if (uniqueDays.has(dStr)) {
+                streak++;
+                checkDate.setDate(checkDate.getDate() - 1);
+            } else {
+                break;
+            }
+        }
+
+        // 暑假预设总目标天数 62天（7月31天 + 8月31天）
+        const targetDays = 62;
+        const progressPercent = Math.min(Math.round((completedDaysCount / targetDays) * 100), 100);
+
+        document.getElementById('statCompletedDays').innerText = completedDaysCount;
+        document.getElementById('statTotalPapers').innerText = totalPapers;
+        document.getElementById('statStreak').innerText = streak;
+        document.getElementById('progressFill').style.width = `${progressPercent}%`;
+    }
+
+    // 清空所有数据
+    function clearAllData() {
+        if (confirm('警告：这将会清空所有的打卡记录，确定要重置吗？')) {
+            records = [];
+            saveRecords();
+            renderCalendar();
+            renderRecords();
+            updateStats();
+        }
+    }
+
+    // 转义简单字符，防止 XSS
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+    }
+</script>
+
+</body>
+</html>
